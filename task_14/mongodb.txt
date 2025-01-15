@@ -1,0 +1,182 @@
+Database Design:
+
+Users Collection:
+
+_id: User ID (auto-generated)
+name: String
+email: String
+role: String (Student, Mentor, etc.)
+attendance: Array of attendance records (each with a date and status)
+codekata: Array of codekata problems solved (each with task ID and date solved)
+company_drive_participation: Array of company drive IDs they participated in
+tasks: Array of task IDs with their status (submitted, pending)
+
+Codekata Collection:
+
+_id: Codekata Problem ID
+title: String
+difficulty: String
+date_added: Date
+users_solved: Array of user IDs that have solved this task
+total_solved_count: Integer
+
+Attendance Collection:
+
+_id: Attendance ID
+user_id: User ID
+date: Date
+status: String (Present/Absent)
+
+Topics Collection:
+
+_id: Topic ID
+name: String
+date_taught: Date
+mentor_id: Mentor ID (from Users collection)
+task_ids: Array of Task IDs associated with the topic
+
+Tasks Collection:
+
+_id: Task ID
+title: String
+description: String
+due_date: Date
+topic_id: Topic ID (linked to Topics collection)
+status: String (submitted, pending)
+user_ids: Array of user IDs who submitted the task
+
+Company Drives Collection:
+
+_id: Drive ID
+company_name: String
+date_of_drive: Date
+participants: Array of User IDs who attended
+drive_result: String (Hired/Not Hired)
+
+Mentors Collection:
+
+_id: Mentor ID
+name: String
+email: String
+mentees_count: Integer (number of mentees assigned)
+
+Queries:
+1. Find all the topics and tasks taught in the month of October:
+javascript
+Copy code
+db.topics.aggregate([
+  {
+    $match: {
+      date_taught: {
+        $gte: new Date("2020-10-01T00:00:00Z"),
+        $lt: new Date("2020-11-01T00:00:00Z")
+      }
+    }
+  },
+  {
+    $lookup: {
+      from: "tasks",
+      localField: "task_ids",
+      foreignField: "_id",
+      as: "tasks"
+    }
+  },
+  {
+    $project: {
+      name: 1,
+      tasks: 1
+    }
+  }
+])
+2. Find all the company drives which appeared between 15 Oct 2020 and 31 Oct 2020:
+javascript
+Copy code
+db.company_drives.find({
+  date_of_drive: {
+    $gte: new Date("2020-10-15T00:00:00Z"),
+    $lt: new Date("2020-11-01T00:00:00Z")
+  }
+})
+3. Find all the company drives and students who appeared for the placement:
+javascript
+Copy code
+db.company_drives.aggregate([
+  {
+    $lookup: {
+      from: "users",
+      localField: "participants",
+      foreignField: "_id",
+      as: "students"
+    }
+  },
+  {
+    $project: {
+      company_name: 1,
+      students: { name: 1, email: 1 }
+    }
+  }
+])
+4. Find the number of problems solved by the user in Codekata:
+javascript
+Copy code
+db.codekata.aggregate([
+  {
+    $match: { "users_solved": { $in: [userId] } }
+  },
+  {
+    $group: {
+      _id: "$_id",
+      total_solved: { $sum: 1 }
+    }
+  }
+])
+5. Find all the mentors who have more than 15 mentees:
+javascript
+Copy code
+db.mentors.find({
+  mentees_count: { $gt: 15 }
+})
+6. Find the number of users who were absent and did not submit their task between 15 Oct 2020 and 31 Oct 2020:
+javascript
+Copy code
+db.attendance.aggregate([
+  {
+    $match: {
+      date: {
+        $gte: new Date("2020-10-15T00:00:00Z"),
+        $lt: new Date("2020-11-01T00:00:00Z")
+      },
+      status: "Absent"
+    }
+  },
+  {
+    $lookup: {
+      from: "users",
+      localField: "user_id",
+      foreignField: "_id",
+      as: "user_details"
+    }
+  },
+  {
+    $unwind: "$user_details"
+  },
+  {
+    $lookup: {
+      from: "tasks",
+      localField: "user_details.tasks",
+      foreignField: "_id",
+      as: "task_status"
+    }
+  },
+  {
+    $match: {
+      "task_status.status": { $ne: "submitted" }
+    }
+  },
+  {
+    $group: {
+      _id: null,
+      count: { $sum: 1 }
+    }
+  }
+])
