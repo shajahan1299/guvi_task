@@ -1,0 +1,73 @@
+body {
+    font-family: sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f0f0f0;
+}
+.Aboutus{
+    color: #f35525;
+}
+
+.container {
+    width: 80%;
+    max-width: 800px;
+    margin: 50px auto;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+h2 {
+    font-size: 24px;
+    margin-bottom: 20px;
+}
+
+.testimonial {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.testimonial-image {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    margin-right: 20px;
+}
+
+.testimonial-text {
+    flex-grow: 1;
+}
+
+.testimonial-text p {
+    margin: 0;
+}
+
+.testimonial-author {
+    font-weight: bold;
+}
+
+.testimonial-location {
+    font-size: 14px;
+    color: #888;
+}
+
+.pagination {
+    display: flex;
+    justify-content: center;
+}
+
+.pagination button {
+    background-color: #f0f0f0;
+    border: none;
+    padding: 10px 15px;
+    margin: 0 5px;
+    border-radius: 3px;
+    cursor: pointer;
+}
+
+.pagination button.active {
+    background-color: #333;
+    color: #fff;
+}
